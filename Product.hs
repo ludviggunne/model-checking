@@ -80,4 +80,6 @@ fromReturnNodes (nodes,_) (states,_,_,_) = map make pairs
 fromTransitions :: Graph -> DFA -> [Prod]
 fromTransitions _ (_,_,_,trans) = map make trans
     where
-        make (src,dst,sym) = ((src,sym,dst), [T sym])
+        make (src,dst,sym) = ((src,sym,dst), rhs sym)
+        rhs "eps" = []
+        rhs sym = [T sym]
