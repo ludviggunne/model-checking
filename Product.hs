@@ -1,6 +1,7 @@
 module Product where
 
 import Data.List
+import Data.Maybe
 import Data.Foldable
 
 import DFA
@@ -22,12 +23,11 @@ makeProds = fold
     , fromReturnNodes
     , fromTransitions ]
 
-getEntry :: String -> [Node] -> String
-getEntry meth nodes = unwrap $ find pred nodes
+getEntry :: String -> [Node] -> Maybe String
+getEntry meth nodes = getName <$> find pred nodes
     where
         pred (_, meth', type_) = meth' == meth && type_ == "entry"
-        unwrap (Just (name,_,_)) = name
-        unwrap Nothing = error $ "no entry for " <> meth
+        getName (name,_,_) = name
 
 epsEdge :: Edge -> Bool
 epsEdge (_,_,"eps") = True
@@ -38,7 +38,8 @@ fromFinalStates :: Graph -> DFA -> [Prod]
 fromFinalStates (nodes,_) (_,start,accept,_) = map make accept
     where
         make state = (startSym, [V (start,main_entry,state)])
-        main_entry = getEntry "main" nodes
+        main_entry = fromMaybe err $ getEntry "main" nodes
+        err = error "no entry for method main"
 
 -- 2
 fromTransferEdges :: Graph -> DFA -> [Prod]
@@ -59,12 +60,12 @@ fromCallEdges (nodes,edges) (states,_,_,_) = map make pairs
         make ((src,dst,meth), (a,b,c,d)) = (lhs,rhs)
             where
                 lhs = (a,src,d)
-                rhs = [V rhs_1, V rhs_2, V rhs_3]
-                rhs_1 = (a,meth,b)
-                rhs_2 = (b,entry,c)
-                rhs_3 = (c,dst,d)
-                -- TODO: handle library methods that have no entry nodes
-                entry = getEntry meth nodes
+                rhs = [rhs_1, rhs_2, rhs_3]
+                rhs_1 = V (a,meth,b)
+                rhs_3 = V (c,dst,d)
+                rhs_2 = case getEntry meth nodes of
+                    Just e -> V (b,e,c)
+                    Nothing -> T meth
 
 -- 4
 fromReturnNodes :: Graph -> DFA -> [Prod]
