@@ -5,10 +5,12 @@ import System.Environment
 
 import DFA
 import Graph
+import Grammar
+import Product
 
 main = do
-    (path:_) <- getArgs
-    graph <- Graph.parse <$> readFile path
-    putStr $ Graph.dot graph
-    -- dfa <- DFA.parse <$> readFile path
-    -- putStr $ DFA.dot dfa
+    (gpath:dpath:_) <- getArgs
+    graph <- Graph.parse <$> readFile gpath
+    dfa <- DFA.parse <$> readFile dpath
+    let gram = graph `prod` dfa
+    putStr $ gramStr gram
