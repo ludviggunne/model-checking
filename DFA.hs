@@ -1,4 +1,9 @@
-module DFA where
+module DFA (
+    DFA (..),
+    DFA_Tran (..),
+    parse,
+    dot,
+) where
 
 import Data.List
 
@@ -9,7 +14,8 @@ import qualified Parser as P
 import Parser hiding (Parser)
 
 type DFA =
-    ( String     -- Start state
+    ( [String]   -- States
+    , String     -- Start state
     , [String]   -- Accepting states
     , [DFA_Tran] -- Transitions
     )
@@ -23,9 +29,10 @@ type DFA_Tran =
 type Parser a = P.Parser DFA a
 
 parse :: String -> DFA
-parse source =
-    let (start, accept, trans) = runParser plines source
-     in (start, nub accept, trans)
+parse = dedup . runParser plines
+
+dedup :: DFA -> DFA
+dedup (q, s, f, e) = (nub q, s, nub f, e)
 
 plines :: Parser ()
 plines = do
@@ -38,18 +45,20 @@ pline = do
     -- Parse source state
     start <- skipOpt "=>"
     (source, accept) <- pstate
-    when start $ tell (source, mempty, mempty)
-    when accept $ tell (mempty, [source], mempty)
+    when start $ tell ([], source, [], [])
+    when accept $ tell ([], "", [source], [])
+    tell ([source], "", [], [])
 
     -- Parse label
     label <- skip "-" >> parseWhile (/= '-') <* skip "->"
 
     -- Parse destination state
     (dest, accept) <- pstate
-    when accept $ tell (mempty, [dest], mempty)
+    when accept $ tell ([], "", [dest], [])
+    tell ([dest], "", [], [])
 
     -- Write transition
-    tell (mempty, mempty, [(source, dest, label)])
+    tell ([], "", [], [(source, dest, label)])
 
 pstate :: Parser (String, Bool)
 pstate = do
@@ -58,7 +67,7 @@ pstate = do
     return (state, accept)
 
 dot :: DFA -> String
-dot (start, accept, trans) = unlines $
+dot (states, start, accept, trans) = unlines $
     pre <> nodes <> edges <> post
     where
         pre = [ "digraph {"
@@ -73,5 +82,4 @@ dot (start, accept, trans) = unlines $
         edges = (flip map) trans $ \(source, dest, label) ->
             "\t\"" <> source <> "\"\t-> \"" <> dest <> "\"\t"
                 <> "[label=\"" <> label <> "\"]"
-        states = nub $ concatMap getStates trans
         getStates (source, dest, _) = [source, dest]

@@ -43,3 +43,6 @@ parseWhile pred = get >>= \case
 
 trim :: Monoid m => Parser m ()
 trim = void $ parseWhile space
+
+word :: Monoid m => Parser m String
+word = trim >> parseWhile (not . space)

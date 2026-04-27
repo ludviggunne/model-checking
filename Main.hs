@@ -4,8 +4,11 @@ import System.IO
 import System.Environment
 
 import DFA
+import Graph
 
 main = do
     (path:_) <- getArgs
-    dfa <- DFA.parse <$> readFile path
-    putStr $ DFA.dot dfa
+    graph <- Graph.parse <$> readFile path
+    putStr $ Graph.dot graph
+    -- dfa <- DFA.parse <$> readFile path
+    -- putStr $ DFA.dot dfa
