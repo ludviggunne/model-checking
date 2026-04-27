@@ -7,6 +7,8 @@ import DFA
 import Graph
 import Grammar
 import Product
+import Gen
+import Derive
 
 main = do
     (gpath:dpath:_) <- getArgs
@@ -17,5 +19,7 @@ main = do
     writeFile "graph.dot" $ Graph.dot graph
     writeFile "dfa.dot" $ DFA.dot dfa
 
-    let gram = graph `prod` dfa
-    putStr $ gramStr gram
+    let gram = graph `prod` compl dfa
+        gens = gen gram
+
+    mapM_ print gens

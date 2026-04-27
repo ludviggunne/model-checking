@@ -19,5 +19,7 @@ instance Show Sym where
 
 gramStr :: Grammar -> String
 gramStr (_,prods) = unlines $ map str prods
-    where
-        str (lhs,rhs) = showNT lhs <> " -> " <> (unwords $ map show rhs)
+    where str (lhs,rhs) = showNT lhs <> " -> " <> (unwords $ map show rhs)
+
+recursive :: Prod -> Bool
+recursive (lhs, rhs) = (V lhs)  `elem` rhs

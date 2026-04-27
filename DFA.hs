@@ -1,6 +1,7 @@
 module DFA (
     DFA (..),
     DFA_Tran (..),
+    compl,
     parse,
     dot,
 ) where
@@ -33,6 +34,9 @@ parse = dedup . runParser plines
 
 dedup :: DFA -> DFA
 dedup (q, s, f, e) = (nub q, s, nub f, e)
+
+compl :: DFA -> DFA
+compl (q, s, f, e) = (q, s, filter (not . (`elem` f)) q, e)
 
 plines :: Parser ()
 plines = do
