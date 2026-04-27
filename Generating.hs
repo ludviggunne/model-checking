@@ -8,24 +8,23 @@ import Control.Monad.Reader
 
 import Grammar
 
-type Generating a = ReaderT [Prod] (State [Sym]) a
+type Gen a = State [Sym] a
 
 gen :: Grammar -> [Sym]
-gen (_,prods) = execState (runReaderT impl prods) []
+gen (_,prods) = execState (impl prods) []
 
-impl :: Generating ()
-impl = do
-    prods <- ask
+impl :: [Prod] -> Gen ()
+impl prods = do
     update <- or <$> mapM step prods
-    when update impl
+    when update $ impl prods
 
-step :: Prod -> Generating Bool
+step :: Prod -> Gen Bool
 step (lhs, rhs) = do
     m <- marked (V lhs)
     if m then return False
          else stepUnmarked (lhs, rhs)
 
-stepUnmarked :: Prod -> Generating Bool
+stepUnmarked :: Prod -> Gen Bool
 stepUnmarked (lhs, rhs) = do
     mapM markTerm rhs
     all_marked <- and <$> mapM marked rhs
@@ -33,12 +32,12 @@ stepUnmarked (lhs, rhs) = do
         then mark (V lhs) >> return True
         else return False
 
-markTerm :: Sym -> Generating ()
+markTerm :: Sym -> Gen ()
 markTerm t@(T _) = mark t
 markTerm _ = return ()
 
-mark :: Sym -> Generating ()
+mark :: Sym -> Gen ()
 mark s = modify $ nub . (s:)
 
-marked :: Sym -> Generating Bool
+marked :: Sym -> Gen Bool
 marked s = gets (s `elem`)
