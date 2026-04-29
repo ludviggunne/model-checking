@@ -22,7 +22,7 @@ main = do
 
     -- Output graphviz files for inputs
     writeFile "graph.dot" $ Graph.dot graph
-    writeFile "dfa.dot" $ DFA.dot $ compl dfa
+    writeFile "dfa.dot" $ DFA.dot dfa
 
     let -- Compute the cool production
         gram = graph `prod` compl dfa
