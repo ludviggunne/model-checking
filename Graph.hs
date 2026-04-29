@@ -69,10 +69,10 @@ dot (nodes, edges) = unlines $
     where
         pre = [ "digraph {" ]
         post = [ "}" ]
-        nlines = (flip map) nodes $ \(name, _, type_) ->
+        nlines = (flip map) nodes $ \(name,meth,type_) ->
             case type_ of
                 "ret"   -> "\t\"" <> name <> "\"\t[shape=rect]"
-                "entry" -> "\t\"" <> name <> "\"\t[shape=doublecircle]"
+                "entry" -> "\t\"" <> name <> "\"\t[shape=doublecircle,label=\"" <> name <> "/" <> meth <> "\"]"
                 _       -> "\t\"" <> name <> "\"\t[shape=circle]"
         elines = (flip map) edges $ \(source, dest, label) ->
             "\t\"" <> source <> "\" -> \"" <> dest <> "\" "

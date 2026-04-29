@@ -21,5 +21,6 @@ gramStr :: Grammar -> String
 gramStr (_,prods) = unlines $ map str prods
     where str (lhs,rhs) = showNT lhs <> " -> " <> (unwords $ map show rhs)
 
-recursive :: Prod -> Bool
-recursive (lhs, rhs) = (V lhs)  `elem` rhs
+gfilter :: (Sym -> Bool) -> Grammar -> Grammar
+gfilter sym_pred (start, prods) = (start, filter prod_pred prods)
+    where prod_pred (lhs, rhs) = all sym_pred $ (V lhs) : rhs

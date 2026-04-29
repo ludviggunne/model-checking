@@ -1,0 +1,12 @@
+=>(unlocked)-lock->[locked]
+(unlocked)-accessA->[sink]
+(unlocked)-accessB->[sink]
+[locked]-unlock->(unlocked)
+[locked]-accessA->[lockedA]
+[locked]-accessB->[lockedB]
+[lockedA]-lock->[sink]
+[lockedB]-lock->[sink]
+[lockedA]-accessB->[sink]
+[lockedB]-accessA->[sink]
+[lockedA]-unlock->(unlocked)
+[lockedB]-unlock->(unlocked)

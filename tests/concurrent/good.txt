@@ -1,0 +1,18 @@
+node v0 meth(main) entry
+node v1 meth(main)
+node v2 meth(main)
+node v3 meth(main) ret
+node v4 meth(main) ret
+edge v0 v1 lock
+edge v1 v2 accessA
+edge v2 v3 unlock
+edge v0 v4 eps
+node v5 meth(lock) entry
+node v6 meth(lock) ret
+edge v5 v6 eps
+node v7 meth(unlock) entry
+node v8 meth(unlock) ret
+edge v7 v8 eps
+node v9 meth(accessA) entry
+node v10 meth(accessA) ret
+edge v9 v10 eps

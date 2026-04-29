@@ -29,9 +29,9 @@ getEntry meth nodes = getName <$> find pred nodes
         pred (_, meth', type_) = meth' == meth && type_ == "entry"
         getName (name,_,_) = name
 
-epsEdge :: Edge -> Bool
-epsEdge (_,_,"eps") = True
-epsEdge _ = False
+epsOrUndefined :: [Node] -> Edge -> Bool
+epsOrUndefined _ (_,_,"eps") = True
+epsOrUndefined nodes (_,_,meth) = not $ isJust $ getEntry meth nodes
 
 -- 1
 fromFinalStates :: Graph -> DFA -> [Prod]
@@ -43,11 +43,11 @@ fromFinalStates (nodes,_) (_,start,accept,_) = map make accept
 
 -- 2
 fromTransferEdges :: Graph -> DFA -> [Prod]
-fromTransferEdges (_,edges) (states,_,_,_) = map make pairs
+fromTransferEdges (nodes,edges) (states,_,_,_) = map make pairs
     where
         pairs = [(e,s) | e <- eps_edges, s <- seqs]
         seqs = [(a,b) | a <- states, b <- states]
-        eps_edges = filter epsEdge edges
+        eps_edges = filter (epsOrUndefined nodes) edges
         make ((src,dst,_), (a,b)) = ((a,src,b), [V (a,dst,b)])
 
 -- 3
@@ -56,16 +56,15 @@ fromCallEdges (nodes,edges) (states,_,_,_) = map make pairs
     where
         pairs = [(e,s) | e <- call_edges, s <- seqs]
         seqs = [(a,b,c,d) | a<-states, b<-states, c<-states, d<-states]
-        call_edges = filter (not . epsEdge) edges
+        call_edges = filter (not . epsOrUndefined nodes) edges
         make ((src,dst,meth), (a,b,c,d)) = (lhs,rhs)
             where
                 lhs = (a,src,d)
-                rhs = [rhs_1, rhs_2, rhs_3]
-                rhs_1 = V (a,meth,b)
-                rhs_3 = V (c,dst,d)
-                rhs_2 = case getEntry meth nodes of
-                    Just e -> V (b,e,c)
-                    Nothing -> T meth
+                rhs = map V [rhs_1, rhs_2, rhs_3]
+                rhs_1 = (a,meth,b)
+                rhs_2 = (b,entry,c)
+                rhs_3 = (c,dst,d)
+                entry = fromMaybe undefined $ getEntry meth nodes
 
 -- 4
 fromReturnNodes :: Graph -> DFA -> [Prod]
