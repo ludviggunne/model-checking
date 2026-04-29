@@ -11,6 +11,7 @@ import Grammar
 startSym :: NonTerm
 startSym = ("the", "start", "state")
 
+-- Compute the product of a flow graph and a DFA
 prod :: Graph -> DFA -> Grammar
 prod graph dfa = (startSym, nub $ makeProds graph dfa)
 

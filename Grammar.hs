@@ -17,10 +17,12 @@ instance Show Sym where
     show (V v) = showNT v
     show (T t) = show t
 
-gramStr :: Grammar -> String
-gramStr (_,prods) = unlines $ map str prods
+-- String representation of grammar
+gstr :: Grammar -> String
+gstr (_,prods) = unlines $ map str prods
     where str (lhs,rhs) = showNT lhs <> " -> " <> (unwords $ map show rhs)
 
+-- Keep only productions for which lhs and all symbols in rhs satisfies a predicate
 gfilter :: (Sym -> Bool) -> Grammar -> Grammar
 gfilter sym_pred (start, prods) = (start, filter prod_pred prods)
     where prod_pred (lhs, rhs) = all sym_pred $ (V lhs) : rhs

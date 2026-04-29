@@ -4,12 +4,12 @@ import Data.List
 
 import Control.Monad
 import Control.Monad.State
-import Control.Monad.Reader
 
 import Grammar
 
 type Gen a = State [Sym] a
 
+-- Compute the generating symbols of a grammar
 gen :: Grammar -> [Sym]
 gen (_,prods) = execState (impl prods) []
 
