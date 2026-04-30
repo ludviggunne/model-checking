@@ -2,6 +2,7 @@
 (unlocked)-accessA->[sink]
 (unlocked)-accessB->[sink]
 [locked]-unlock->(unlocked)
+[locked]-lock->[sink]
 [locked]-accessA->[lockedA]
 [locked]-accessB->[lockedB]
 [lockedA]-lock->[sink]
@@ -10,3 +11,7 @@
 [lockedB]-accessA->[sink]
 [lockedA]-unlock->(unlocked)
 [lockedB]-unlock->(unlocked)
+[sink]-lock->[sink]
+[sink]-unlock->[sink]
+[sink]-accessA->[sink]
+[sink]-accessB->[sink]

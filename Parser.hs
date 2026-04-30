@@ -29,7 +29,7 @@ skipOpt prefix = stripPrefix prefix <$> get >>= \case
 
 skip :: Monoid m => String -> Parser m ()
 skip prefix = skipOpt prefix >>= \result ->
-    when (not result) $ error $ "expected " <> prefix
+    when (not result) $ perror $ "expected " <> prefix
 
 space :: Char -> Bool
 space c = c == ' ' || c == '\n'
@@ -46,3 +46,8 @@ trim = void $ parseWhile space
 
 word :: Monoid m => Parser m String
 word = trim >> parseWhile (not . space)
+
+perror :: Monoid m => String -> Parser m ()
+perror str = do
+    left <- take 20 <$> get
+    error $ str <> ": " <> left <> " <<<"
