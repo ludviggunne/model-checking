@@ -4,7 +4,6 @@ import Grammar
 
 -- Generate a string from a grammar.
 -- All productions must be generating.
-
 derive :: Grammar -> [Term]
 derive (start, prods) = impl [start] (V start)
   where
@@ -14,17 +13,12 @@ derive (start, prods) = impl [start] (V start)
     impl _ (T t) = [t]
     impl v (V lhs) = concatMap (impl (lhs:v)) rhs
       where
-        rhs :: [Sym]
-        rhs = snd $ head ok_prods
+        (rhs:_) = filter (all (not . visited)) $ prodFn lhs
 
-        -- Productions with rhs that doesn't have a visited non-terminal
-        ok_prods :: [Prod]
-        ok_prods = filter (all (not . visited) . snd) all_prods
-
-        -- All productions with lhs matching current non-terminal
-        all_prods :: [Prod]
-        all_prods = filter ((== lhs) . fst) prods
-
-        visited :: Sym -> Bool
         visited (T _) = False
         visited (V n) = n `elem` v
+
+    prodFn = foldMap mkProdFn prods
+
+mkProdFn :: Prod -> NonTerm -> [[Sym]]
+mkProdFn (lhs, rhs) = \lhs' -> if lhs == lhs' then [rhs] else []

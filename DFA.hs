@@ -4,9 +4,11 @@ module DFA (
     compl,
     parse,
     dot,
+    runDFA,
 ) where
 
 import Data.List
+import Data.Maybe
 
 import Control.Monad
 import Control.Monad.Writer
@@ -87,3 +89,16 @@ dot (states, start, accept, trans) = unlines $
             "\t\"" <> source <> "\"\t-> \"" <> dest <> "\"\t"
                 <> "[label=\"" <> label <> "\"]"
         getStates (source, dest, _) = [source, dest]
+
+delta :: [DFA_Tran] -> String -> [String] -> String
+delta _ state [] = state
+delta trans state (first:rest) = delta trans new_state rest
+    where
+        (_,new_state,_) = fromMaybe err $ find pred trans
+        pred (src,_,label) = src == state && label == first
+        err = error $ "missing transition in DFA: state=" <> state <>
+                      ", symbol=" <> first
+
+runDFA :: DFA -> [String] -> Bool
+runDFA (_,start,accept,trans) string = state `elem` accept
+    where state = delta trans start string
