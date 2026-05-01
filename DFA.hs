@@ -85,9 +85,15 @@ dot (states, start, accept, trans) = unlines $
             if state `elem` accept
                 then "\t\"" <> state <> "\"\t[shape=doublecircle] // accepting"
                 else "\t\"" <> state <> "\"\t[shape=circle]"
-        edges = (flip map) trans $ \(source, dest, label) ->
-            "\t\"" <> source <> "\"\t-> \"" <> dest <> "\"\t"
-                <> "[label=\"" <> label <> "\"]"
+        pairs = [(src,dst) | src <- states, dst <- states]
+        edges = (flip map) pairs $ \(src,dst) ->
+            let trans' = filter (\(s,d,_) -> s == src && d == dst) trans
+                labels = map (\(_,_,l) -> l) trans'
+                label = concat $ intersperse ", " labels
+             in if (not $ null label)
+                then "\t\"" <> src <> "\"\t-> \"" <> dst<> "\"\t"
+                     <> "[label=\"" <> label <> "\"]"
+                else ""
         getStates (source, dest, _) = [source, dest]
 
 delta :: [DFA_Tran] -> String -> [String] -> String
