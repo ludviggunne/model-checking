@@ -31,14 +31,24 @@ type DFA_Tran =
 
 type Parser a = P.Parser DFA a
 
-parse :: String -> DFA
-parse = dedup . runParser plines
-
 dedup :: DFA -> DFA
 dedup (q, s, f, e) = (nub q, s, nub f, e)
 
 compl :: DFA -> DFA
 compl (q, s, f, e) = (q, s, filter (not . (`elem` f)) q, e)
+
+selfLoops :: DFA -> DFA
+selfLoops (states, start, accept, trans) = (states, start, accept, new_trans)
+    where
+        syms      = map (\(_,_,c) -> c) trans
+        all       = [(q, c) | q <- states, c <- syms]
+        present   = map (\(q,_,c) -> (q,c)) trans
+        missing   = filter (not . (`elem` present)) all
+        loops     = map (\(q,c) -> (q,q,c)) missing
+        new_trans = trans <> loops
+
+parse :: String -> DFA
+parse = selfLoops . dedup . runParser plines
 
 plines :: Parser ()
 plines = do
