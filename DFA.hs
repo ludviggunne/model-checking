@@ -32,23 +32,25 @@ type DFA_Tran =
 type Parser a = P.Parser DFA a
 
 dedup :: DFA -> DFA
-dedup (q, s, f, e) = (nub q, s, nub f, e)
+dedup (q, s, f, e) = (nub q, s, nub f, nub e)
 
 compl :: DFA -> DFA
 compl (q, s, f, e) = (q, s, filter (not . (`elem` f)) q, e)
 
-selfLoops :: DFA -> DFA
-selfLoops (states, start, accept, trans) = (states, start, accept, new_trans)
+addSink :: DFA -> DFA
+addSink (states, start, accept, trans) = (new_states, start, accept, new_trans)
     where
-        syms      = map (\(_,_,c) -> c) trans
-        all       = [(q, c) | q <- states, c <- syms]
-        present   = map (\(q,_,c) -> (q,c)) trans
-        missing   = filter (not . (`elem` present)) all
-        loops     = map (\(q,c) -> (q,q,c)) missing
-        new_trans = trans <> loops
+        sink       = "*sink*"
+        new_states = sink:states
+        syms       = map (\(_,_,c) -> c) trans
+        all        = [(q,c) | q <- new_states, c <- syms]
+        present    = map (\(q,_,c) -> (q,c)) trans
+        missing    = filter (not . (`elem` present)) all
+        added      = map (\(q,c) -> (q,sink,c)) missing
+        new_trans  = trans <> added
 
 parse :: String -> DFA
-parse = selfLoops . dedup . runParser plines
+parse = dedup . addSink . runParser plines
 
 plines :: Parser ()
 plines = do
