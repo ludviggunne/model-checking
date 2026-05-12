@@ -50,7 +50,7 @@ main = do
         -- Compute the set of generating symbols
         gens = gen gram
 
-    putStr $ gstr gram
+    -- putStr $ gstr gram
 
     when (not $ (V startSym) `elem` gens) $ do
         -- Start symbol is not generating: the language is empty and the program is OK!
